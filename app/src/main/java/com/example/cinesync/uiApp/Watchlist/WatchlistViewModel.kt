@@ -36,23 +36,20 @@ class WatchlistViewModel @Inject constructor(
     fun getWatchlist() {
         viewModelScope.launch {
             _uiState.value.isLoading = true
-            getWatchlistUseCase()
-                .onSuccess { movies ->
+            getWatchlistUseCase().collect { Result ->
+                Result.onSuccess { movies ->
                     _uiState.update { it.copy(isLoading = false, movies = movies, error = false) }
-                    Log.d("GetWatchlistUseCase", "Watchlist fetched successfully with size = ${movies.size}")
+                    Log.d(
+                        "GetWatchlistUseCase",
+                        "Watchlist fetched successfully with size = ${movies.size}"
+                    )
 
-                }
-                .onFailure { error ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = true,
-                            movies = emptyList<Movie>()
-                        )
+                }.onFailure { error ->
+                    _uiState.update { it.copy(isLoading = false, error = true, movies = emptyList<Movie>())
                     }
                     Log.e("GetWatchlistUseCase", "Error fetching watchlist", error)
-
                 }
+            }
         }
     }
 
