@@ -35,16 +35,13 @@ class SearchViewModel @Inject constructor(
     val snackbarMessage = _snackbarMessage.asSharedFlow()
 
     init {
-
-        if (_uiState.value.movies.isEmpty()) {
-            fetchMovies()
-        }
-        observeWatchlistChanges()
+        Log.e("SearchViewModel", "init")
+//        observeWatchlistChanges()
     }
 
     fun fetchMovies(){
         viewModelScope.launch {
-            _uiState.value.isLoading = true
+            _uiState.update { it.copy(isLoading = true, error = false) }
             discoverMoviesUseCase()
                 .onSuccess { movies ->
                     _uiState.update { it.copy(isLoading = false, movies = movies,error = false) }
@@ -55,17 +52,23 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    private fun observeWatchlistChanges() {
+    fun observeWatchlistChanges() {
         viewModelScope.launch {
-            getWatchlistUseCase().onSuccess { movies ->
-                _uiState.update { it.copy(watchlistMovies = _uiState.value.watchlistMovies + movies) }
+            getWatchlistUseCase().collect { Result ->
+                Result.onSuccess { watchlistMovies ->
+                    _uiState.update { it.copy(watchlistMovies = watchlistMovies)}
+                }.onFailure { error ->
+                    _uiState.update { it.copy(isLoading = false, error = true, movies = emptyList<Movie>())
+                    }
+                    Log.e("GetWatchlistUseCase", "Error fetching watchlist", error)
+                }
             }
         }
     }
 
     fun fetchSearchedMovie(movieName: String){
         viewModelScope.launch {
-            _uiState.value.isLoading = true
+            _uiState.update { it.copy(isLoading = true, error = false) }
             searchMoviesUseCase(movieName)
                 .onSuccess { movies ->
                     _uiState.update { it.copy(isLoading = false, movies = movies,error=false) }
@@ -79,6 +82,7 @@ class SearchViewModel @Inject constructor(
     fun logError(error: Throwable,query: String=""){
         Log.e("SearchViewModel", "Error fetching movies: $query because ${error.message}", error)
         _uiState.update { it.copy(isLoading = false, error = true, movies = emptyList()) }
+        Log.e("SearchViewMode", "Is loading: ${_uiState.value.isLoading}")
     }
 
     fun addMovieToWatchlist(movie: Movie) {
