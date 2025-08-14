@@ -203,6 +203,11 @@ fun SearchScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
+    LaunchedEffect(key1 = Unit) {
+        viewModel.fetchMovies()
+        viewModel.observeWatchlistChanges()
+    }
+
     LaunchedEffect(Unit) {
         viewModel.snackbarMessage.collect { message ->
             scope.launch {
