@@ -77,6 +77,10 @@ class SearchViewModelTest {
             getWatchlistUseCase()
         } returns flowOf(Result.success(emptyList()))
 
+//        coEvery{
+//            viewModel.fetchMovies()
+//        } returns failureResult
+
         viewModel.fetchMovies()
         advanceUntilIdle()
 

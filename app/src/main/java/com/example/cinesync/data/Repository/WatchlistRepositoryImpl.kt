@@ -1,6 +1,8 @@
-package com.example.cinesync.data
+package com.example.cinesync.data.Repository
 
 import com.example.cinesync.data.ApiService.WatchlistApiService
+import com.example.cinesync.data.toDto
+import com.example.cinesync.data.toEntity
 import com.example.cinesync.domain.Entity.Movie
 import com.example.cinesync.domain.Repository.WatchlistRepository
 import kotlinx.coroutines.flow.Flow

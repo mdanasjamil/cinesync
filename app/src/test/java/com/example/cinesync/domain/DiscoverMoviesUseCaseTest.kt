@@ -1,26 +1,22 @@
 package com.example.cinesync.domain
 
-import com.example.cinesync.data.TmdbRepositoryImpl
 import com.example.cinesync.domain.Entity.Movie
 import com.example.cinesync.domain.Repository.TmdbRepository
 import com.example.cinesync.domain.UseCase.DiscoverMoviesUseCase
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.impl.annotations.MockK
-import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Test
-import org.junit.experimental.theories.suppliers.TestedOn
 
 @ExperimentalCoroutinesApi
 class DiscoverMoviesUseCaseTest {

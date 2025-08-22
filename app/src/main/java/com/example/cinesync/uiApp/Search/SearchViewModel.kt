@@ -3,10 +3,6 @@ package com.example.cinesync.uiApp.Search
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.cinesync.data.MovieDto
-import com.example.cinesync.data.TmdbRepositoryImpl
-import com.example.cinesync.data.toEntity
 import com.example.cinesync.domain.Entity.Movie
 import com.example.cinesync.domain.UseCase.AddMovieToWatchlistUseCase
 import com.example.cinesync.domain.UseCase.DiscoverMoviesUseCase
