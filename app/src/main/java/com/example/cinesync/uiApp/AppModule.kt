@@ -1,12 +1,18 @@
 package com.example.cinesync.uiApp
 
+import android.app.Activity
+import android.content.Context
+import com.example.cinesync.data.ApiService.BiometricDataSource
 import com.example.cinesync.data.ApiService.MoviesApiService
 import com.example.cinesync.data.ApiService.WatchlistApiService
-import com.example.cinesync.data.TmdbRepositoryImpl
-import com.example.cinesync.data.WatchlistRepositoryImpl
+import com.example.cinesync.data.Repository.BiometricRepositoryImpl
+import com.example.cinesync.data.Repository.TmdbRepositoryImpl
+import com.example.cinesync.data.Repository.WatchlistRepositoryImpl
+import com.example.cinesync.domain.Repository.BiometricRepository
 import com.example.cinesync.domain.Repository.TmdbRepository
 import com.example.cinesync.domain.Repository.WatchlistRepository
 import com.example.cinesync.domain.UseCase.AddMovieToWatchlistUseCase
+import com.example.cinesync.domain.UseCase.BiometricAuthUseCase
 import com.example.cinesync.domain.UseCase.DiscoverMoviesUseCase
 import com.example.cinesync.domain.UseCase.GetWatchlistUseCase
 import com.example.cinesync.domain.UseCase.RemoveFromWatchlistUseCase
@@ -15,6 +21,7 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -94,4 +101,25 @@ object AppModule {
     fun provideRemoveFromWatchlistUseCase(repository: WatchlistRepository): RemoveFromWatchlistUseCase {
         return RemoveFromWatchlistUseCase(repository)
     }
+
+    @Provides
+    @Singleton
+    fun provideAuthenticateUseCase(repository: BiometricRepository): BiometricAuthUseCase {
+        return BiometricAuthUseCase(repository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideBiometricRepository(dataSource: BiometricDataSource): BiometricRepository {
+        return BiometricRepositoryImpl(dataSource)
+    }
+
+    @Provides
+    @Singleton
+    fun provideBiometricDataSource(@ApplicationContext context: Context): BiometricDataSource {
+        return BiometricDataSource(context)
+    }
+
+
+
 }

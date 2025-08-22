@@ -214,7 +214,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("app.cash.turbine:turbine:1.0.0") //for testing flows
 
-
+    implementation(libs.android.biometric)
 
 
 
