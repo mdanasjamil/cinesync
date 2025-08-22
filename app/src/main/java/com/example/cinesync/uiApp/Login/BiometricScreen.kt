@@ -1,5 +1,7 @@
 package com.example.cinesync.uiApp.Login
 
+import androidx.activity.compose.LocalActivity
+import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +24,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 //import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -29,6 +33,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.cinesync.R
 import com.example.cinesync.uiApp.Navigation.Screens
+import androidx.biometric.BiometricManager
 
 @Composable
 fun LoginScreen(
@@ -38,14 +43,15 @@ fun LoginScreen(
     onUserLoginReady: () -> Unit = {},
     navController: NavController = rememberNavController()
 ) {
+    val biometricAuthViewModel: BiometricAuthViewModel = hiltViewModel()
     val uiState by biometricAuthViewModel.uiState.collectAsStateWithLifecycle()
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
 
 
+    // 2. This effect handles navigation AFTER the state has been updated
     LaunchedEffect(uiState.loggedIn) {
         if (uiState.loggedIn) {
-            // Navigate to the search screen and clear the login screen from the back stack
             navController.navigate(Screens.SearchScreen.name) {
                 popUpTo(navController.graph.startDestinationId) { inclusive = true }
             }
@@ -91,13 +97,15 @@ fun LoginScreen(
         Button(
             onClick = {
                 focusManager.clearFocus(force = true)
-                biometricAuthViewModel.authenticate(context)
+                biometricAuthViewModel.onLoginClicked(context = context)
             }
         ) {
             Text(text = stringResource(R.string.login_button_text))
         }
     }
 }
+
+//
 
 @Preview
 @Composable

@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">CineSync</string>
     <string name="enter_your_movie">Enter your movie</string>
-
+    <string name="username_placeholder">username</string>
+    <string name="password_placeholder">password</string>
+    <string name="login_button_text">LogIn</string>
 </resources>

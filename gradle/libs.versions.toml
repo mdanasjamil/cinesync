@@ -10,8 +10,10 @@ activityCompose = "1.10.1"
 composeBom = "2024.09.00"
 dagger = "2.51.1"
 hilt = "2.51.1"
+biometric = "1.2.0-alpha05"
 
 [libraries]
+android-biometric = {module = "androidx.biometric:biometric",version.ref="biometric"}
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

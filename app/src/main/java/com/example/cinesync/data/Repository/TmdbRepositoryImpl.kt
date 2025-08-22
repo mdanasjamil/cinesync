@@ -1,7 +1,7 @@
-package com.example.cinesync.data
+package com.example.cinesync.data.Repository
 
-import android.util.Log
 import com.example.cinesync.data.ApiService.MoviesApiService
+import com.example.cinesync.data.toEntity
 import com.example.cinesync.domain.Repository.TmdbRepository
 import com.example.cinesync.domain.Entity.Movie
 
