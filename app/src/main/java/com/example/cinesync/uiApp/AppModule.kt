@@ -2,17 +2,25 @@ package com.example.cinesync.uiApp
 
 import android.app.Activity
 import android.content.Context
+//import androidx.privacysandbox.tools.core.generator.build
+import androidx.room.Room
 import com.example.cinesync.data.ApiService.MoviesApiService
 import com.example.cinesync.data.ApiService.WatchlistApiService
+import com.example.cinesync.data.Database.AppDatabase
+import com.example.cinesync.data.Database.UserDao
 import com.example.cinesync.data.Repository.TmdbRepositoryImpl
+import com.example.cinesync.data.Repository.UserRepositoryImpl
 import com.example.cinesync.data.Repository.WatchlistRepositoryImpl
 import com.example.cinesync.domain.Repository.TmdbRepository
+import com.example.cinesync.domain.Repository.UserRepository
 import com.example.cinesync.domain.Repository.WatchlistRepository
 import com.example.cinesync.domain.UseCase.AddMovieToWatchlistUseCase
 import com.example.cinesync.domain.UseCase.DiscoverMoviesUseCase
+import com.example.cinesync.domain.UseCase.GetWatchlistFromDatabaseUseCase
 import com.example.cinesync.domain.UseCase.GetWatchlistUseCase
 import com.example.cinesync.domain.UseCase.RemoveFromWatchlistUseCase
 import com.example.cinesync.domain.UseCase.SearchMoviesUseCase
+import com.example.cinesync.domain.UseCase.UserUseCase
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
@@ -98,7 +106,39 @@ object AppModule {
         return RemoveFromWatchlistUseCase(repository)
     }
 
+    @Provides
+    @Singleton
+    fun provideUserUseCase(userRepository: UserRepository): UserUseCase {
+        return UserUseCase(userRepository)
+    }
 
+    @Provides
+    @Singleton
+    fun provideUserRepository(userDao: UserDao): UserRepository {
+        return UserRepositoryImpl(userDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserDao(appDatabase: AppDatabase): UserDao {
+        return appDatabase.userDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAppDatabase(@ApplicationContext appContext: Context): AppDatabase {
+        return Room.databaseBuilder(
+            appContext,
+            AppDatabase::class.java,
+            "cinesync_database"
+        ).build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetWatchlistFromDatabaseUseCase(userUseCase: UserUseCase): GetWatchlistFromDatabaseUseCase {
+        return GetWatchlistFromDatabaseUseCase(userUseCase)
+    }
 
 
 }

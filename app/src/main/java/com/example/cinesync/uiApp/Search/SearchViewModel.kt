@@ -3,11 +3,13 @@ package com.example.cinesync.uiApp.Search
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cinesync.data.Database.User
 import com.example.cinesync.domain.Entity.Movie
 import com.example.cinesync.domain.UseCase.AddMovieToWatchlistUseCase
 import com.example.cinesync.domain.UseCase.DiscoverMoviesUseCase
 import com.example.cinesync.domain.UseCase.GetWatchlistUseCase
 import com.example.cinesync.domain.UseCase.SearchMoviesUseCase
+import com.example.cinesync.domain.UseCase.UserUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,7 +25,8 @@ class SearchViewModel @Inject constructor(
     private val searchMoviesUseCase: SearchMoviesUseCase,
     private val discoverMoviesUseCase: DiscoverMoviesUseCase,
     private val addMovieToWatchlistUseCase: AddMovieToWatchlistUseCase,
-    private val getWatchlistUseCase: GetWatchlistUseCase
+    private val getWatchlistUseCase: GetWatchlistUseCase,
+    private val userUseCase: UserUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(SearchUiState())
     val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
@@ -48,11 +51,11 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    fun observeWatchlistChanges() {
+    fun observeGlobalWatchlistChanges() {
         viewModelScope.launch {
             getWatchlistUseCase().collect { Result ->
                 Result.onSuccess { watchlistMovies ->
-                    _uiState.update { it.copy(watchlistMovies = watchlistMovies)}
+                    _uiState.update { it.copy(globalWatchlistMovies = watchlistMovies)}
                 }.onFailure { error ->
                     _uiState.update { it.copy(isLoading = false, error = true, movies = emptyList<Movie>())
                     }
@@ -60,6 +63,25 @@ class SearchViewModel @Inject constructor(
                 }
             }
         }
+    }
+    fun observeLocalWatchlistChanges(user:User?){
+            if (user == null || user.username.isNullOrBlank()) {
+                _uiState.update { it.copy(isLoading = false, error = true) }
+                Log.e("GetWatchlistUseCase", "Cannot fetch watchlist because user or username is null.")
+                return
+            }
+            viewModelScope.launch {
+                _uiState.value.isLoading = true
+                try{
+                    val movies = userUseCase.getUserWatchlist(user.username)
+                    _uiState.update { it.copy(localWatchlistMovies = movies?:emptyList()) }
+                    Log.d("GetWatchlistUseCase", "Local Watchlist fetched successfully with size: ${user.movies?.size}")
+                }catch (e: Exception){
+                    _uiState.update { it.copy(isLoading = false, error = true) }
+                    Log.e("GetWatchlistUseCase", "Error fetching local watchlist", e)
+                }
+
+            }
     }
 
     fun fetchSearchedMovie(movieName: String){
@@ -81,22 +103,44 @@ class SearchViewModel @Inject constructor(
         Log.e("SearchViewMode", "Is loading: ${_uiState.value.isLoading}")
     }
 
-    fun addMovieToWatchlist(movie: Movie) {
+    fun addMovieToGlobalWatchlist(user:User, movie: Movie) {
         viewModelScope.launch {
             addMovieToWatchlistUseCase(movie)
                 .onSuccess { wasAdded ->
                     val message = if (wasAdded) {
-                        "'${movie.title}' added to Watchlist"
+                        "'${movie.title}' added to Global Watchlist"
                     } else {
-                        "'${movie.title}' is already in the Watchlist"
+                        "'${movie.title}' is already in the Global Watchlist"
                     }
-                    if(wasAdded){observeWatchlistChanges()} /*TODO repeated fetching and copy, optimize it*/
+                    if(wasAdded){observeGlobalWatchlistChanges()} /*TODO repeated fetching and copy, optimize it*/
                     _snackbarMessage.emit(message)
                 }
                 .onFailure { error ->
                     Log.e("SearchViewModel", "Error adding movie: ${error.message}", error)
-                    _snackbarMessage.emit("Error: Could not add movie") // Send error message
+                    _snackbarMessage.emit("Error: Could not add movie")
                 }
+        }
+    }
+    fun addMovieToLocalWatchlist(user:User, movie: Movie) {
+        viewModelScope.launch{
+            try{
+                val movieAdded = false
+                if(user.username!=null) {
+                    val movieAdded = userUseCase.insertMovieInUserWatchlist(user.username,movie)
+                }
+                var message = ""
+                if(!movieAdded){
+                    message = "'${movie.title}' is already in the Local Watchlist"
+                } else{
+                    message = "'${movie.title}' added to Local Watchlist"
+                }
+                _snackbarMessage.emit(message)
+                _uiState.update { it.copy(localWatchlistMovies = it.localWatchlistMovies + movie, error = false, isLoading = false) }
+                Log.d("SearchViewModel", "Movie added to local watchlist: ${movie.title}")
+            }catch(e:Exception){
+                Log.e("SearchViewModel", "Error adding movie locally: ${e.message}", e)
+                _snackbarMessage.emit("Error: Could not add movie")
+            }
         }
     }
 }

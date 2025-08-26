@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.annotationProcessor
+
 plugins {
 
     alias(libs.plugins.android.application)
@@ -84,7 +86,7 @@ android {
 
 }
 
-
+val room_version = "2.7.2"
 
 dependencies {
 
@@ -105,6 +107,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
 
     implementation(libs.androidx.material3)
+    implementation(libs.firebase.crashlytics.buildtools)
 
     testImplementation(libs.junit)
 
@@ -215,6 +218,17 @@ dependencies {
     testImplementation("app.cash.turbine:turbine:1.0.0") //for testing flows
 
     implementation(libs.android.biometric)
+
+
+//    ksp("androidx.room:room-compiler:2.6.0")
+    implementation("com.google.code.gson:gson:2.13.1")
+
+    implementation("androidx.room:room-runtime:$room_version")
+    kapt ("androidx.room:room-compiler:$room_version") // <-- Correct for Kapt
+    implementation("androidx.room:room-ktx:$room_version")
+
+    // ...
+    implementation(libs.androidx.material.icons.extended)
 
 
 

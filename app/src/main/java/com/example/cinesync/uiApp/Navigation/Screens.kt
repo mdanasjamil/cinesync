@@ -2,7 +2,10 @@ package com.example.cinesync.uiApp.Navigation
 
 enum class Screens (){
 
+
+    SignupScreen,
     LoginScreen,
     SearchScreen,
-    WatchlistScreen
+    LocalWatchlistScreen,
+    GlobalWatchlistScreen,
 }

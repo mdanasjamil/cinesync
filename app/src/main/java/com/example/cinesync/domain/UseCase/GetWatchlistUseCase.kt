@@ -16,7 +16,7 @@ class GetWatchlistUseCase (
         return watchlistRepository.getWatchlist()
          .map { movies -> Result.success(movies) }
          .catch { e ->
-              Log.e("GetWatchlistUseCase", "Error in watchlist repository", e)
+             Log.e("GetWatchlistUseCase", "Error in watchlist repository", e)
              emit(Result.failure(e))
          }
     }

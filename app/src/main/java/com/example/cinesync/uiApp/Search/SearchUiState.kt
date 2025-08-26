@@ -6,7 +6,8 @@ data class SearchUiState(
     var movies: List<Movie> = emptyList(),
     var isLoading: Boolean = true,
     var error: Boolean = false,
-    val watchlistMovies: List<Movie> = emptyList()
+    val localWatchlistMovies: List<Movie> = emptyList(),
+    val globalWatchlistMovies: List<Movie> = emptyList()
 ) {
 
 }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,7 +23,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
@@ -33,7 +33,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -67,15 +66,16 @@ import com.example.cinesync.domain.Entity.Movie
 import com.example.cinesync.uiApp.Navigation.Screens
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.cinesync.ui.theme.CustomBlue
-import com.example.cinesync.uiApp.Watchlist.WatchlistViewModel
-import kotlinx.coroutines.CoroutineScope
+import com.example.cinesync.uiApp.Navigation.SharedViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun MovieCard(
     movie: Movie,
-    onAddClicked: () -> Unit,
-    isMovieAdded: Boolean,
+    onLocalAddClicked: () -> Unit,
+    onGlobalAddClicked: () -> Unit,
+    isMovieAddedLocally: Boolean,
+    isMovieAddedGlobally: Boolean,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -116,38 +116,77 @@ fun MovieCard(
                     fontWeight = FontWeight.Light
                 )
             }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                if(!isMovieAdded) {
-                    Button(
-                        onClick = { onAddClicked() },
-                        modifier = Modifier.size(40.dp),
-                        shape = CircleShape,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text(text = "+", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Box(
+                    modifier = Modifier
+                        .weight(1f) // Use weight to share space instead of fillMaxWidth
+                        .padding(bottom = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (!isMovieAddedGlobally) {
+                        Button(
+                            onClick = { onGlobalAddClicked() },
+                            modifier = Modifier.size(40.dp),
+                            shape = CircleShape,
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(text = "+", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        }
+                    } else {
+                        Button(
+                            onClick = {},
+                            modifier = Modifier.size(40.dp),
+                            shape = CircleShape,
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = "Check",
+                                tint = Color.White,
+                            )
+                        }
                     }
-                }else{
-                    Button(
-                        onClick = {},
-                        modifier = Modifier.size(40.dp),
-                        shape = CircleShape,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Check",
-                            tint = Color.White,
-                        )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f) // Use weight to share space instead of fillMaxWidth
+                        .padding(bottom = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (!isMovieAddedLocally) {
+                        Button(
+                            onClick = { onLocalAddClicked() },
+                            modifier = Modifier.size(40.dp),
+                            shape = CircleShape,
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(text = "+", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        }
+                    } else {
+                        Button(
+                            onClick = {},
+                            modifier = Modifier.size(40.dp),
+                            shape = CircleShape,
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = "Check",
+                                tint = Color.White,
+                            )
+                        }
                     }
                 }
             }
+
         }
     }
 
@@ -177,13 +216,21 @@ fun AppFooter(modifier: Modifier = Modifier,navController: NavController) {
             }
 
             // Watchlist Button
-            Button(onClick = {navController.navigate(Screens.WatchlistScreen.name)},
+            Button(onClick = {navController.navigate(Screens.GlobalWatchlistScreen.name)},
                 colors = ButtonDefaults.buttonColors(
                     containerColor = CustomBlue,
                     contentColor = Color.White)
             ) {
-                Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Watchlist")
-                Text(text = "Watchlist", modifier = Modifier.padding(start = 8.dp))
+                Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Global Watchlist")
+                Text(text = "Global", modifier = Modifier.padding(start = 8.dp))
+            }
+            Button(onClick = {navController.navigate(Screens.LocalWatchlistScreen.name)},
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = CustomBlue,
+                    contentColor = Color.White)
+            ) {
+                Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Local Watchlist")
+                Text(text = "Local", modifier = Modifier.padding(start = 8.dp))
             }
         }
     }
@@ -194,8 +241,10 @@ fun AppFooter(modifier: Modifier = Modifier,navController: NavController) {
 fun SearchScreen(
     modifier: Modifier = Modifier,
     viewModel: SearchViewModel = hiltViewModel(),
+    sharedViewModel: SharedViewModel = viewModel(),
     navController: NavController = rememberNavController()
 ) {
+    val user by sharedViewModel.currentUser.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
     val uiState by viewModel.uiState.collectAsState()
     val movies = uiState.movies
@@ -205,7 +254,8 @@ fun SearchScreen(
 
     LaunchedEffect(key1 = Unit) {
         viewModel.fetchMovies()
-        viewModel.observeWatchlistChanges()
+        viewModel.observeGlobalWatchlistChanges()
+        viewModel.observeLocalWatchlistChanges(user)
     }
 
     LaunchedEffect(Unit) {
@@ -262,8 +312,21 @@ fun SearchScreen(
                     items(movies) { movie ->
                         MovieCard(
                             movie = movie,
-                            onAddClicked = { viewModel.addMovieToWatchlist(movie) },
-                            isMovieAdded = uiState.watchlistMovies.contains(movie)
+                            onLocalAddClicked = {
+                                if (user != null) {
+                                    viewModel.addMovieToLocalWatchlist(user!!, movie)
+                                } else {
+                                   navController.navigate(Screens.LoginScreen.name)
+                                } },
+                            onGlobalAddClicked = {
+                                if(user!=null){
+                                    viewModel.addMovieToGlobalWatchlist(user!!, movie)
+                                }else{
+                                    navController.navigate(Screens.LoginScreen.name)
+                                }
+                            },
+                            isMovieAddedLocally = uiState.localWatchlistMovies.contains(movie),
+                            isMovieAddedGlobally = uiState.globalWatchlistMovies.contains(movie)
                         )
                     }
                 }

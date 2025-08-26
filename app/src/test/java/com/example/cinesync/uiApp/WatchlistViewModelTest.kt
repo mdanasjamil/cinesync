@@ -4,7 +4,7 @@ import android.util.Log
 import com.example.cinesync.domain.Entity.Movie
 import com.example.cinesync.domain.UseCase.GetWatchlistUseCase
 import com.example.cinesync.domain.UseCase.RemoveFromWatchlistUseCase
-import com.example.cinesync.uiApp.Watchlist.WatchlistViewModel
+import com.example.cinesync.uiApp.GlobalWatchlist.WatchlistViewModel
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.every

@@ -1,4 +1,4 @@
-package com.example.cinesync.uiApp.Login
+package com.example.cinesync.uiApp.Login.Biometric
 import android.content.Context
 import android.content.Intent
 import androidx.biometric.BiometricManager

@@ -1,9 +1,10 @@
-package com.example.cinesync.uiApp.Watchlist
+package com.example.cinesync.uiApp.GlobalWatchlist
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cinesync.domain.Entity.Movie
+import com.example.cinesync.domain.UseCase.GetWatchlistFromDatabaseUseCase
 import com.example.cinesync.domain.UseCase.GetWatchlistUseCase
 import com.example.cinesync.domain.UseCase.RemoveFromWatchlistUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,6 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class WatchlistViewModel @Inject constructor(
     private val getWatchlistUseCase: GetWatchlistUseCase,
+    private val getWatchlistFromDatabaseUseCase: GetWatchlistFromDatabaseUseCase,
     private val removeFromWatchlistUseCase: RemoveFromWatchlistUseCase
 ):ViewModel() {
     private val _uiState = MutableStateFlow(WatchlistUiState())
@@ -29,11 +31,11 @@ class WatchlistViewModel @Inject constructor(
 
     init {
         if (_uiState.value.movies.isEmpty()) {
-            getWatchlist()
+            getGlobalWatchlist()
         }
     }
 
-    fun getWatchlist() {
+    fun getGlobalWatchlist() {
         viewModelScope.launch {
             _uiState.value.isLoading = true
             getWatchlistUseCase().collect { Result ->
@@ -53,13 +55,13 @@ class WatchlistViewModel @Inject constructor(
         }
     }
 
-    fun removeMovieFromWatchlist(movie: Movie) {
+    fun removeMovieFromGlobalWatchlist(movie: Movie) {
         viewModelScope.launch {
             _uiState.value.isLoading = true
             removeFromWatchlistUseCase(movie)
                 .onSuccess {
                     _uiState.update { it.copy(isLoading = false, error = false) }
-                    getWatchlist()
+                    getGlobalWatchlist()
                     val message = "'${movie.title}' removed from Watchlist"
                     Log.d("RemoveFromWatchlistUseCase", "Movie removed from watchlist: ${movie.title}")
                     _snackbarMessage.emit(message)

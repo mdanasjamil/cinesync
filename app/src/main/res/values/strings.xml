@@ -3,5 +3,13 @@
     <string name="enter_your_movie">Enter your movie</string>
     <string name="username_placeholder">username</string>
     <string name="password_placeholder">password</string>
-    <string name="login_button_text">LogIn</string>
+    <string name="login_button_text">Log In</string>
+    <string name="signup_title">Create Account</string>
+    <string name="name_label">Name</string>
+    <string name="confirm_password_label">Confirm Password</string>
+    <string name="signup_button_text">Sign Up</string>
+    <string name="welcome_back">Welcome Back</string>
+    <string name="login_subtitle">Log In</string>
+    <string name="no_account_prompt">"Create New Account: "</string>
+    <string name="sign_up_button_text">Sign Up</string>
 </resources>

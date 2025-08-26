@@ -1,22 +1,22 @@
-package com.example.cinesync.uiApp.Watchlist
+package com.example.cinesync.uiApp.LocalWatchlist
+
+import androidx.compose.foundation.lazy.items
+
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -38,10 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,11 +51,8 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.cinesync.domain.Entity.Movie
 import com.example.cinesync.uiApp.Search.AppFooter
-import com.example.cinesync.uiApp.Search.MovieCard
-import kotlinx.coroutines.flow.collect
-import kotlin.time.Duration
-import com.example.cinesync.R
 import com.example.cinesync.ui.theme.CustomBlue
+import com.example.cinesync.uiApp.Navigation.SharedViewModel
 
 @Composable
 fun TopBar(navController: NavController=rememberNavController(),
@@ -148,8 +142,9 @@ fun MovieListCard(
 }
 
 @Composable
-fun WatchlistScreen(modifier: Modifier = Modifier,
-                    viewModel: WatchlistViewModel = hiltViewModel(),
+fun LocalWatchlistScreen(modifier: Modifier = Modifier,
+                    viewModel: LocalWatchlistViewModel = hiltViewModel(),
+                    sharedViewModel: SharedViewModel = viewModel(),
                     navController: NavController = rememberNavController()
 ){
     val uiState by viewModel.uiState.collectAsState()
@@ -162,6 +157,12 @@ fun WatchlistScreen(modifier: Modifier = Modifier,
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    val user by sharedViewModel.currentUser.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.getLocalWatchlist(user)
+    }
 
     LaunchedEffect(Unit) {
         viewModel.snackbarMessage.collect{message->
@@ -190,7 +191,7 @@ fun WatchlistScreen(modifier: Modifier = Modifier,
                 items(movies) { movie ->
                     MovieListCard(
                         movie = movie,
-                        onRemoveClicked = { viewModel.removeMovieFromWatchlist(movie) })
+                        onRemoveClicked = { viewModel.removeMovieFromLocalWatchlist(user,movie) })
                 }
             }
         } else{
@@ -205,7 +206,7 @@ fun WatchlistScreen(modifier: Modifier = Modifier,
 
 @Preview
 @Composable
-fun WatchlistScreenPreview(){
-    WatchlistScreen()
+fun LocalWatchlistScreenPreview(){
+    LocalWatchlistScreen()
 }
 
