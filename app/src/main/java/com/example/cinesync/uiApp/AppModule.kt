@@ -7,6 +7,7 @@ import androidx.room.Room
 import com.example.cinesync.data.ApiService.MoviesApiService
 import com.example.cinesync.data.ApiService.WatchlistApiService
 import com.example.cinesync.data.Database.AppDatabase
+import com.example.cinesync.data.Database.MIGRATION_1_2
 import com.example.cinesync.data.Database.UserDao
 import com.example.cinesync.data.Repository.TmdbRepositoryImpl
 import com.example.cinesync.data.Repository.UserRepositoryImpl
@@ -131,7 +132,8 @@ object AppModule {
             appContext,
             AppDatabase::class.java,
             "cinesync_database"
-        ).build()
+        )
+            .addMigrations(MIGRATION_1_2).build()
     }
 
     @Provides
