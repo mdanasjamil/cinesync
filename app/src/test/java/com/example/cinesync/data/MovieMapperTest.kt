@@ -1,5 +1,6 @@
 package com.example.cinesync.data
 
+import com.example.cinesync.data.Dto.MovieDto
 import com.example.cinesync.domain.Entity.Movie
 import org.junit.Test
 import kotlin.test.assertEquals

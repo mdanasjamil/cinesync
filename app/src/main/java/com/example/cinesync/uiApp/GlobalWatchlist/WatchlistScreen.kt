@@ -163,6 +163,10 @@ fun WatchlistScreen(modifier: Modifier = Modifier,
         }
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.getGlobalWatchlist()
+    }
+
     Scaffold (
         topBar = {TopBar(navController)},
         bottomBar = { AppFooter(modifier, navController = navController) },

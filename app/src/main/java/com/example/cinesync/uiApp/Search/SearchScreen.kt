@@ -66,6 +66,7 @@ import com.example.cinesync.domain.Entity.Movie
 import com.example.cinesync.uiApp.Navigation.Screens
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.cinesync.ui.theme.CustomBlue
+import com.example.cinesync.ui.theme.CustomDarkGreen
 import com.example.cinesync.uiApp.Navigation.SharedViewModel
 import kotlinx.coroutines.launch
 
@@ -131,7 +132,7 @@ fun MovieCard(
                             onClick = { onGlobalAddClicked() },
                             modifier = Modifier.size(40.dp),
                             shape = CircleShape,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
+                            colors = ButtonDefaults.buttonColors(containerColor = CustomBlue),
                             contentPadding = PaddingValues(0.dp)
                         ) {
                             Text(text = "+", fontSize = 20.sp, fontWeight = FontWeight.Bold)
@@ -141,7 +142,7 @@ fun MovieCard(
                             onClick = {},
                             modifier = Modifier.size(40.dp),
                             shape = CircleShape,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
+                            colors = ButtonDefaults.buttonColors(containerColor = CustomDarkGreen),
                             contentPadding = PaddingValues(0.dp)
                         ) {
                             Icon(
@@ -164,7 +165,7 @@ fun MovieCard(
                             onClick = { onLocalAddClicked() },
                             modifier = Modifier.size(40.dp),
                             shape = CircleShape,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
+                            colors = ButtonDefaults.buttonColors(containerColor = CustomBlue),
                             contentPadding = PaddingValues(0.dp)
                         ) {
                             Text(text = "+", fontSize = 20.sp, fontWeight = FontWeight.Bold)
@@ -174,7 +175,7 @@ fun MovieCard(
                             onClick = {},
                             modifier = Modifier.size(40.dp),
                             shape = CircleShape,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
+                            colors = ButtonDefaults.buttonColors(containerColor = CustomDarkGreen),
                             contentPadding = PaddingValues(0.dp)
                         ) {
                             Icon(

@@ -29,12 +29,6 @@ class WatchlistViewModel @Inject constructor(
     private val _snackbarMessage = MutableSharedFlow<String>()
     val snackbarMessage = _snackbarMessage.asSharedFlow()
 
-    init {
-        if (_uiState.value.movies.isEmpty()) {
-            getGlobalWatchlist()
-        }
-    }
-
     fun getGlobalWatchlist() {
         viewModelScope.launch {
             _uiState.value.isLoading = true

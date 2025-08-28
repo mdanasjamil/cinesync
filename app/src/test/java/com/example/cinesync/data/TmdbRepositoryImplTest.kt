@@ -1,6 +1,8 @@
 package com.example.cinesync.data
 
 import com.example.cinesync.data.ApiService.MoviesApiService
+import com.example.cinesync.data.Dto.MovieDto
+import com.example.cinesync.data.Dto.MovieListDto
 import com.example.cinesync.data.Repository.TmdbRepositoryImpl
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery

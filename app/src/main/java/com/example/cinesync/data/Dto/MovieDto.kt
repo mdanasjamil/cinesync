@@ -1,4 +1,4 @@
-package com.example.cinesync.data
+package com.example.cinesync.data.Dto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

@@ -1,6 +1,7 @@
 package com.example.cinesync.data
 
 import com.example.cinesync.data.ApiService.WatchlistApiService
+import com.example.cinesync.data.Dto.MovieDto
 import com.example.cinesync.data.Repository.WatchlistRepositoryImpl
 import com.example.cinesync.domain.Entity.Movie
 import io.mockk.MockKAnnotations

@@ -1,8 +1,7 @@
 package com.example.cinesync.data.ApiService
 
-import com.example.cinesync.data.MovieDto
-import com.example.cinesync.data.MovieListDto
-import com.example.cinesync.domain.Entity.Movie
+import com.example.cinesync.data.Dto.MovieDto
+import com.example.cinesync.data.Dto.MovieListDto
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET

@@ -134,17 +134,6 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (uiState.loginError || uiState.biometricError) {
-            Text(
-                text = uiState.loginErrorMessage ?: uiState.biometricErrorMessage ?: "",
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier
-                    .padding(vertical = 8.dp)
-                    .align(Alignment.Start)
-            )
-        }
-
         if(uiState.loginError){
             Text(
                 text = uiState.loginErrorMessage ?: "",
