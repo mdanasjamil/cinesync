@@ -1,7 +1,7 @@
 package com.example.cinesync.data
 
+import com.example.cinesync.data.Dto.MovieDto
 import com.example.cinesync.domain.Entity.Movie
-import com.example.cinesync.data.MovieDto
 
 fun MovieDto.toEntity(): Movie {
     return Movie(

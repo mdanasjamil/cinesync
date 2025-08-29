@@ -12,6 +12,7 @@ import com.example.cinesync.uiApp.Signup.SignupScreen
 import com.example.cinesync.uiApp.GlobalWatchlist.WatchlistScreen
 import com.example.cinesync.uiApp.LocalWatchlist.LocalWatchlistScreen
 import com.example.cinesync.uiApp.GlobalWatchlist.WatchlistScreen
+import com.example.cinesync.uiApp.Login.addLoginAuthScreen
 
 @Composable
 fun AppNavigation(modifier: Modifier = Modifier) {
@@ -41,12 +42,7 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                 sharedViewModel = sharedViewModel
             )
         }
-        composable(Screens.LoginScreen.name) {
-            LoginScreen(
-                navController = navController,
-                sharedViewModel = sharedViewModel,
-            )
-        }
+        addLoginAuthScreen(navController = navController,sharedViewModel = sharedViewModel)
         composable(Screens.SignupScreen.name) {
             SignupScreen(navController = navController)
         }

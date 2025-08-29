@@ -10,12 +10,14 @@ import com.example.cinesync.uiApp.Login.Biometric.BiometricAuthResult
 import com.example.cinesync.uiApp.Login.Biometric.BiometricAuthenticator
 import com.example.cinesync.uiApp.Signup.SignupUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -36,7 +38,24 @@ class AuthViewModel @Inject constructor(
     private val _eventFlow = MutableSharedFlow<BiometricAuthEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
+    private val _action = Channel<LoginAuthScreenAction>(capacity=Channel.BUFFERED) /*TODO:Read*/
+    val action = _action.receiveAsFlow()
+
     private lateinit var biometricAuthenticator: BiometricAuthenticator
+
+    fun onEvent(loginAuthScreenEvent: LoginAuthScreenEvent,context: Context){
+        when(loginAuthScreenEvent){
+            is LoginAuthScreenEvent.PerformLogin -> {onLoginClicked(_uiState.value.usernameField,
+                _uiState.value.passwordField, context)}
+            is LoginAuthScreenEvent.UsernameChanged -> {
+                _uiState.update { it.copy(usernameField = loginAuthScreenEvent.username) }
+            }
+            is LoginAuthScreenEvent.PasswordChanged -> {
+                _uiState.update { it.copy(passwordField = loginAuthScreenEvent.password) }
+            }
+            else -> Unit
+        }
+    }
 
     suspend fun verifyLoginDetails(username: String, password: String): Boolean {
         val user = userUseCase.verifyLogin(username = username, password = password)
@@ -73,10 +92,12 @@ class AuthViewModel @Inject constructor(
             .onEach { result ->
                 when (result) {
                     is BiometricAuthResult.AUTHENTICATION_SUCCESS -> {
-                        _uiState.update { it.copy(loggedInAndVerifed = true, biometricError = false) }
+                        sendAction(action = LoginAuthScreenAction.LoginSuccess(
+                            username =_uiState.value.usernameField,password = _uiState.value.passwordField))
+//                        _uiState.update { it.copy( biometricError = false) }
                     }
                     is BiometricAuthResult.AUTHENTICATION_FAILED, is BiometricAuthResult.AUTHENTICATION_ERROR -> {
-                        _uiState.update { it.copy(loggedInAndVerifed = false, biometricError = true, biometricErrorMessage = "Biometric Authentication failed.") }
+                        _uiState.update { it.copy(biometricError = true, biometricErrorMessage = "Biometric Authentication failed.") }
                     }
                     else -> Unit
                 }
@@ -91,4 +112,9 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
+
+    private fun sendAction(action: LoginAuthScreenAction){
+        _action.trySend(action)
+    }
+
 }

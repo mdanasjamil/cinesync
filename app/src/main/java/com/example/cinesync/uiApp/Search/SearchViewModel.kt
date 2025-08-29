@@ -5,9 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cinesync.data.Database.User
 import com.example.cinesync.domain.Entity.Movie
-import com.example.cinesync.domain.UseCase.AddMovieToWatchlistUseCase
+import com.example.cinesync.domain.UseCase.AddMovieToGlobalWatchlistUseCase
 import com.example.cinesync.domain.UseCase.DiscoverMoviesUseCase
-import com.example.cinesync.domain.UseCase.GetWatchlistUseCase
+import com.example.cinesync.domain.UseCase.GetGlobalWatchlistUseCase
 import com.example.cinesync.domain.UseCase.SearchMoviesUseCase
 import com.example.cinesync.domain.UseCase.UserUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,8 +24,8 @@ import javax.inject.Inject
 class SearchViewModel @Inject constructor(
     private val searchMoviesUseCase: SearchMoviesUseCase,
     private val discoverMoviesUseCase: DiscoverMoviesUseCase,
-    private val addMovieToWatchlistUseCase: AddMovieToWatchlistUseCase,
-    private val getWatchlistUseCase: GetWatchlistUseCase,
+    private val addMovieToGlobalWatchlistUseCase: AddMovieToGlobalWatchlistUseCase,
+    private val getGlobalWatchlistUseCase: GetGlobalWatchlistUseCase,
     private val userUseCase: UserUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(SearchUiState())
@@ -53,7 +53,7 @@ class SearchViewModel @Inject constructor(
 
     fun observeGlobalWatchlistChanges() {
         viewModelScope.launch {
-            getWatchlistUseCase().collect { Result ->
+            getGlobalWatchlistUseCase().collect { Result ->
                 Result.onSuccess { watchlistMovies ->
                     _uiState.update { it.copy(globalWatchlistMovies = watchlistMovies)}
                 }.onFailure { error ->
@@ -105,7 +105,7 @@ class SearchViewModel @Inject constructor(
 
     fun addMovieToGlobalWatchlist(user:User, movie: Movie) {
         viewModelScope.launch {
-            addMovieToWatchlistUseCase(movie)
+            addMovieToGlobalWatchlistUseCase(movie)
                 .onSuccess { wasAdded ->
                     val message = if (wasAdded) {
                         "'${movie.title}' added to Global Watchlist"

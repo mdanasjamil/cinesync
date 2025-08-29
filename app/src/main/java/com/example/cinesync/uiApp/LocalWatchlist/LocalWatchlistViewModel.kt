@@ -6,9 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cinesync.data.Database.User
 import com.example.cinesync.domain.Entity.Movie
-import com.example.cinesync.domain.UseCase.GetWatchlistFromDatabaseUseCase
-import com.example.cinesync.domain.UseCase.GetWatchlistUseCase
-import com.example.cinesync.domain.UseCase.RemoveFromWatchlistUseCase
+import com.example.cinesync.domain.UseCase.GetGlobalWatchlistUseCase
+import com.example.cinesync.domain.UseCase.RemoveFromGlobalWatchlistUseCase
 import com.example.cinesync.domain.UseCase.UserUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -22,9 +21,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LocalWatchlistViewModel @Inject constructor(
-    private val getWatchlistUseCase: GetWatchlistUseCase,
-    private val getWatchlistFromDatabaseUseCase: GetWatchlistFromDatabaseUseCase,
-    private val removeFromWatchlistUseCase: RemoveFromWatchlistUseCase,
+    private val getGlobalWatchlistUseCase: GetGlobalWatchlistUseCase,
+    private val removeFromGlobalWatchlistUseCase: RemoveFromGlobalWatchlistUseCase,
     private val userUseCase: UserUseCase
 ):ViewModel() {
     private val _uiState = MutableStateFlow(LocalWatchlistUiState())

@@ -1,9 +1,9 @@
-package com.example.cinesync.uiApp
+package com.example.cinesync.uiApp.Watchlist
 
 import android.util.Log
 import com.example.cinesync.domain.Entity.Movie
-import com.example.cinesync.domain.UseCase.GetWatchlistUseCase
-import com.example.cinesync.domain.UseCase.RemoveFromWatchlistUseCase
+import com.example.cinesync.domain.UseCase.GetGlobalWatchlistUseCase
+import com.example.cinesync.domain.UseCase.RemoveFromGlobalWatchlistUseCase
 import com.example.cinesync.uiApp.GlobalWatchlist.WatchlistViewModel
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
@@ -31,13 +31,13 @@ class WatchlistViewModelTest {
     private lateinit var viewModel: WatchlistViewModel
 
     @MockK
-    private lateinit var getWatchlistUseCase: GetWatchlistUseCase
+    private lateinit var getGlobalWatchlistUseCase: GetGlobalWatchlistUseCase
     @MockK
-    private lateinit var removeFromWatchlistUseCase: RemoveFromWatchlistUseCase
+    private lateinit var removeFromGlobalWatchlistUseCase: RemoveFromGlobalWatchlistUseCase
 
     val mockWatchlist = listOf(
         Movie(1, "Dragon", "xx.jpg", 8.2),
-        Movie(2,"World","yy.jpg",9.3)
+        Movie(2, "World", "yy.jpg", 9.3)
     )
 
     @Before
@@ -51,13 +51,17 @@ class WatchlistViewModelTest {
         every { Log.e(any(), any(), any()) } returns 0
         every { Log.d(any(), any()) } returns 0
 
-        coEvery{
-            getWatchlistUseCase()
-        } returns flowOf(Result.success(listOf(
-            Movie(1, "Dragon", "xx.jpg", 8.2),
-            Movie(2,"World","yy.jpg",9.3)
-        )))
-        viewModel = WatchlistViewModel(getWatchlistUseCase, removeFromWatchlistUseCase)
+        coEvery {
+            getGlobalWatchlistUseCase()
+        } returns flowOf(
+            Result.success(
+                listOf(
+                    Movie(1, "Dragon", "xx.jpg", 8.2),
+                    Movie(2, "World", "yy.jpg", 9.3)
+                )
+            )
+        )
+        viewModel = WatchlistViewModel(getGlobalWatchlistUseCase, removeFromGlobalWatchlistUseCase)
     }
 
     @After
@@ -66,22 +70,22 @@ class WatchlistViewModelTest {
     }
 
     @Test
-    fun `removeMovieFromWatchlist on success emits correct snackbar message` () = runTest {
+    fun `removeMovieFromGlobalWatchlist on success emits correct snackbar message` () = runTest {
         val movie = mockWatchlist[0]
 
-        coEvery{
-            removeFromWatchlistUseCase(movie)
+        coEvery {
+            removeFromGlobalWatchlistUseCase(movie)
         } returns Result.success(Unit)
 
         var collectedMessage: String? = null
-        val job = launch(UnconfinedTestDispatcher(testScheduler)){
+        val job = launch(UnconfinedTestDispatcher(testScheduler)) {
             collectedMessage = viewModel.snackbarMessage.first()
         }
 
-        viewModel.removeMovieFromWatchlist(movie)
+        viewModel.removeMovieFromGlobalWatchlist(movie)
         advanceUntilIdle()
 
-        assertEquals("'${movie.title}' removed from Watchlist", collectedMessage)
+        assertEquals("'${movie.title}' removed from Global Watchlist", collectedMessage)
         job.cancel()
     }
 }

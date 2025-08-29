@@ -3,10 +3,10 @@ package com.example.cinesync.domain.UseCase
 import com.example.cinesync.domain.Entity.Movie
 import com.example.cinesync.domain.Repository.TmdbRepository
 
-class DiscoverMoviesUseCase(
+open class DiscoverMoviesUseCase(
     private val repository: TmdbRepository
 ) {
-    suspend operator fun invoke(): Result<List<Movie>> {
+    open suspend operator fun invoke(): Result<List<Movie>> {
         return try {
             val movies = repository.discoverMovies()
             val filteredList = movies

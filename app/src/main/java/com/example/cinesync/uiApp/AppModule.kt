@@ -1,6 +1,5 @@
 package com.example.cinesync.uiApp
 
-import android.app.Activity
 import android.content.Context
 //import androidx.privacysandbox.tools.core.generator.build
 import androidx.room.Room
@@ -15,11 +14,10 @@ import com.example.cinesync.data.Repository.WatchlistRepositoryImpl
 import com.example.cinesync.domain.Repository.TmdbRepository
 import com.example.cinesync.domain.Repository.UserRepository
 import com.example.cinesync.domain.Repository.WatchlistRepository
-import com.example.cinesync.domain.UseCase.AddMovieToWatchlistUseCase
+import com.example.cinesync.domain.UseCase.AddMovieToGlobalWatchlistUseCase
 import com.example.cinesync.domain.UseCase.DiscoverMoviesUseCase
-import com.example.cinesync.domain.UseCase.GetWatchlistFromDatabaseUseCase
-import com.example.cinesync.domain.UseCase.GetWatchlistUseCase
-import com.example.cinesync.domain.UseCase.RemoveFromWatchlistUseCase
+import com.example.cinesync.domain.UseCase.GetGlobalWatchlistUseCase
+import com.example.cinesync.domain.UseCase.RemoveFromGlobalWatchlistUseCase
 import com.example.cinesync.domain.UseCase.SearchMoviesUseCase
 import com.example.cinesync.domain.UseCase.UserUseCase
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -90,21 +88,21 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideGetWatchlistUseCase(repository: WatchlistRepository): GetWatchlistUseCase {
-        return GetWatchlistUseCase(repository)
+    fun provideGetWatchlistUseCase(repository: WatchlistRepository): GetGlobalWatchlistUseCase {
+        return GetGlobalWatchlistUseCase(repository)
 
     }
 
     @Provides
     @Singleton
-    fun provideAddMovieToWatchlistUseCase(repository: WatchlistRepository): AddMovieToWatchlistUseCase {
-        return AddMovieToWatchlistUseCase(repository)
+    fun provideAddMovieToWatchlistUseCase(repository: WatchlistRepository): AddMovieToGlobalWatchlistUseCase {
+        return AddMovieToGlobalWatchlistUseCase(repository)
     }
 
     @Provides
     @Singleton
-    fun provideRemoveFromWatchlistUseCase(repository: WatchlistRepository): RemoveFromWatchlistUseCase {
-        return RemoveFromWatchlistUseCase(repository)
+    fun provideRemoveFromWatchlistUseCase(repository: WatchlistRepository): RemoveFromGlobalWatchlistUseCase {
+        return RemoveFromGlobalWatchlistUseCase(repository)
     }
 
     @Provides
@@ -134,12 +132,6 @@ object AppModule {
             "cinesync_database"
         )
             .addMigrations(MIGRATION_1_2).build()
-    }
-
-    @Provides
-    @Singleton
-    fun provideGetWatchlistFromDatabaseUseCase(userUseCase: UserUseCase): GetWatchlistFromDatabaseUseCase {
-        return GetWatchlistFromDatabaseUseCase(userUseCase)
     }
 
 

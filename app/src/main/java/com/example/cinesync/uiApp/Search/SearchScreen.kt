@@ -53,6 +53,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -277,7 +278,7 @@ fun SearchScreen(
                         viewModel.fetchSearchedMovie(searchQuery)  },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(16.dp).testTag("search_field"),
                 label = { Text(stringResource(R.string.enter_your_movie)) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
                 singleLine = true,
@@ -300,13 +301,13 @@ fun SearchScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (uiState.isLoading) {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize().testTag("loading_indicator")) {
                     CircularProgressIndicator(color = Color.Black)
                 }
             } else if (!uiState.error) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().testTag("movie_grid"),
                     contentPadding = PaddingValues(8.dp),
                     horizontalArrangement = Arrangement.Center
                 ) {

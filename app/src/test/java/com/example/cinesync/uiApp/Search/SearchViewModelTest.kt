@@ -1,12 +1,13 @@
-package com.example.cinesync.uiApp
+package com.example.cinesync.uiApp.Search
 
 import android.util.Log
+import com.example.cinesync.data.Database.User
 import com.example.cinesync.domain.Entity.Movie
-import com.example.cinesync.domain.UseCase.AddMovieToWatchlistUseCase
+import com.example.cinesync.domain.UseCase.AddMovieToGlobalWatchlistUseCase
 import com.example.cinesync.domain.UseCase.DiscoverMoviesUseCase
-import com.example.cinesync.domain.UseCase.GetWatchlistUseCase
+import com.example.cinesync.domain.UseCase.GetGlobalWatchlistUseCase
 import com.example.cinesync.domain.UseCase.SearchMoviesUseCase
-import com.example.cinesync.uiApp.Search.SearchViewModel
+import com.example.cinesync.domain.UseCase.UserUseCase
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.every
@@ -14,9 +15,7 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.mockkStatic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -25,8 +24,6 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import net.bytebuddy.matcher.ElementMatchers.any
-import okhttp3.Dispatcher
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -41,9 +38,14 @@ class SearchViewModelTest {
     @MockK
     private lateinit var discoverMoviesUseCase: DiscoverMoviesUseCase
     @MockK
-    private lateinit var addMovieToWatchlistUseCase: AddMovieToWatchlistUseCase
+    private lateinit var addMovieToGlobalWatchlistUseCase: AddMovieToGlobalWatchlistUseCase
     @MockK
-    private lateinit var getWatchlistUseCase: GetWatchlistUseCase
+    private lateinit var getGlobalWatchlistUseCase: GetGlobalWatchlistUseCase
+
+    @MockK
+    private lateinit var userUseCase: UserUseCase
+
+    private val mockUser = User(1, "test")
 
     @Before
     fun setup(){
@@ -55,7 +57,7 @@ class SearchViewModelTest {
 
         MockKAnnotations.init(this)
         Dispatchers.setMain(StandardTestDispatcher())
-        viewModel = SearchViewModel(searchMoviesUseCase, discoverMoviesUseCase, addMovieToWatchlistUseCase, getWatchlistUseCase)
+        viewModel = SearchViewModel(searchMoviesUseCase, discoverMoviesUseCase, addMovieToGlobalWatchlistUseCase, getGlobalWatchlistUseCase, userUseCase)
     }
 
     @After
@@ -73,8 +75,8 @@ class SearchViewModelTest {
             discoverMoviesUseCase()
         } returns failureResult
 
-        coEvery{
-            getWatchlistUseCase()
+        coEvery {
+            getGlobalWatchlistUseCase()
         } returns flowOf(Result.success(emptyList()))
 
 //        coEvery{
@@ -99,40 +101,41 @@ class SearchViewModelTest {
     }
 
     @Test
-    fun `fetchMovies success updates state with movie list and sets isLoading to false`() = runTest {
-        val mockMovies = listOf(
-            Movie(1,"Dragon","xx.jpg",8.2),
-            Movie(2,"World","yy.jpg",9.3)
-        )
+    fun `fetchMovies success updates state with movie list and sets isLoading to false`() =
+        runTest {
+            val mockMovies = listOf(
+                Movie(1, "Dragon", "xx.jpg", 8.2),
+                Movie(2, "World", "yy.jpg", 9.3)
+            )
 
-        coEvery{
-            discoverMoviesUseCase()
-        } returns Result.success(mockMovies)
+            coEvery {
+                discoverMoviesUseCase()
+            } returns Result.success(mockMovies)
 
-        coEvery{
-            getWatchlistUseCase()
-        } returns flowOf(Result.success(emptyList()))
+            coEvery {
+                getGlobalWatchlistUseCase()
+            } returns flowOf(Result.success(emptyList()))
 
-        viewModel.fetchMovies()
-        advanceUntilIdle()
+            viewModel.fetchMovies()
+            advanceUntilIdle()
 
-        val finalState = viewModel.uiState.value
-        assertEquals(
-            false,
-            finalState.isLoading,
-            "isLoading should be false after success. State: $finalState"
-        )
-        assertEquals(
-            mockMovies,
-            finalState.movies,
-            "movies should be the same after success. State: $finalState"
-        )
-        assertEquals(
-            false,
-            finalState.error,
-            "error should be false after success. State: $finalState"
-        )
-    }
+            val finalState = viewModel.uiState.value
+            assertEquals(
+                false,
+                finalState.isLoading,
+                "isLoading should be false after success. State: $finalState"
+            )
+            assertEquals(
+                mockMovies,
+                finalState.movies,
+                "movies should be the same after success. State: $finalState"
+            )
+            assertEquals(
+                false,
+                finalState.error,
+                "error should be false after success. State: $finalState"
+            )
+        }
 
     //fetchSeachedMovie
     @Test
@@ -143,8 +146,8 @@ class SearchViewModelTest {
             searchMoviesUseCase(any())
         } returns failureResult
 
-        coEvery{
-            getWatchlistUseCase()
+        coEvery {
+            getGlobalWatchlistUseCase()
         } returns flowOf(Result.success(emptyList()))
 
         viewModel.fetchSearchedMovie("test")
@@ -165,48 +168,49 @@ class SearchViewModelTest {
     }
 
     @Test
-    fun `fetchSearchedMovie success updates state with movie list and sets isLoading to false`() = runTest {
-        val mockMovies = listOf(
-            Movie(1,"Dragon","xx.jpg",8.2),
-            Movie(2,"World","yy.jpg",9.3)
-        )
-        coEvery{
-            searchMoviesUseCase("test")
-        } returns Result.success(mockMovies)
+    fun `fetchSearchedMovie success updates state with movie list and sets isLoading to false`() =
+        runTest {
+            val mockMovies = listOf(
+                Movie(1, "Dragon", "xx.jpg", 8.2),
+                Movie(2, "World", "yy.jpg", 9.3)
+            )
+            coEvery {
+                searchMoviesUseCase("test")
+            } returns Result.success(mockMovies)
 
-        coEvery{
-            getWatchlistUseCase()
-        } returns flowOf(Result.success(emptyList()))
+            coEvery {
+                getGlobalWatchlistUseCase()
+            } returns flowOf(Result.success(emptyList()))
 
-        viewModel.fetchSearchedMovie("test")
-        advanceUntilIdle()
+            viewModel.fetchSearchedMovie("test")
+            advanceUntilIdle()
 
-        val finalState = viewModel.uiState.value
-        assertEquals(
-            false,
-            finalState.isLoading,
-            "isLoading should be false after success. State: $finalState"
-        )
-        assertEquals(
-            mockMovies,
-            finalState.movies,
-            "movies should be the same after success. State: $finalState"
-        )
-    }
+            val finalState = viewModel.uiState.value
+            assertEquals(
+                false,
+                finalState.isLoading,
+                "isLoading should be false after success. State: $finalState"
+            )
+            assertEquals(
+                mockMovies,
+                finalState.movies,
+                "movies should be the same after success. State: $finalState"
+            )
+        }
 
     //addMovieToWatchlist
     @Test
     fun `addMovieToWatchlist failure emits error snackbarMessage`() = runTest {
-        val mockMovie = Movie(1,"Dragon","xx.jpg",8.2)
+        val mockMovie = Movie(1, "Dragon", "xx.jpg", 8.2)
         val simulatedError = Exception("Could Not Add Movie to Watchlist")
         val failureResult: Result<Boolean> = Result.failure(simulatedError)
 
-        coEvery{
-            addMovieToWatchlistUseCase(mockMovie)
+        coEvery {
+            addMovieToGlobalWatchlistUseCase(mockMovie)
         } returns failureResult
 
-        coEvery{
-            getWatchlistUseCase()
+        coEvery {
+            getGlobalWatchlistUseCase()
         } returns flowOf(Result.success(emptyList()))
 
 
@@ -215,7 +219,7 @@ class SearchViewModelTest {
             collectedMessage = viewModel.snackbarMessage.first()
         }
 
-        viewModel.addMovieToWatchlist(mockMovie)
+        viewModel.addMovieToGlobalWatchlist(mockUser, mockMovie)
         advanceUntilIdle()
 
         val finalState = viewModel.uiState.value
@@ -227,14 +231,15 @@ class SearchViewModelTest {
 
     @Test
     fun `addMovieToWatchlist success emits success snackbarMessage`() = runTest {
-        val mockMovie = Movie(1,"Dragon","xx.jpg",8.2)
-        val mockList = listOf(mockMovie,mockMovie)
+        val mockMovie = Movie(1, "Dragon", "xx.jpg", 8.2)
+        val mockList = listOf(mockMovie, mockMovie)
 
-        coEvery{
-            addMovieToWatchlistUseCase(mockMovie)
+        coEvery {
+            addMovieToGlobalWatchlistUseCase(mockMovie)
         } returns Result.success(true)
 
-        coEvery { getWatchlistUseCase()
+        coEvery {
+            getGlobalWatchlistUseCase()
         } returns flowOf(Result.success(mockList))
 
         var collectedMessage: String? = null
@@ -242,54 +247,54 @@ class SearchViewModelTest {
             collectedMessage = viewModel.snackbarMessage.first()
         }
 
-        viewModel.addMovieToWatchlist(mockMovie)
+        viewModel.addMovieToGlobalWatchlist(mockUser, mockMovie)
         advanceUntilIdle()
-        assertEquals("'${mockMovie.title}' added to Watchlist", collectedMessage)
+        assertEquals("'${mockMovie.title}' added to Global Watchlist", collectedMessage)
         job.cancel()
     }
 
     @Test
     fun `addMovieToWatchlist for existing movie emits correct snackbarMessage`() = runTest {
-        val mockMovie = Movie(1,"Dragon","xx.jpg",8.2)
-        val mockList = listOf(mockMovie,mockMovie)
+        val mockMovie = Movie(1, "Dragon", "xx.jpg", 8.2)
+        val mockList = listOf(mockMovie, mockMovie)
 
-        coEvery{
-            addMovieToWatchlistUseCase(mockMovie)
+        coEvery {
+            addMovieToGlobalWatchlistUseCase(mockMovie)
         } returns Result.success(false)
 
-        coEvery{
-            getWatchlistUseCase()
+        coEvery {
+            getGlobalWatchlistUseCase()
         } returns flowOf(Result.success(mockList))
 
         var collectedMessage: String? = null
-        val job = launch(UnconfinedTestDispatcher(testScheduler)){
+        val job = launch(UnconfinedTestDispatcher(testScheduler)) {
             collectedMessage = viewModel.snackbarMessage.first()
         }
 
-        viewModel.addMovieToWatchlist(mockMovie)
+        viewModel.addMovieToGlobalWatchlist(mockUser, mockMovie)
         advanceUntilIdle()
-        assertEquals("'${mockMovie.title}' is already in the Watchlist", collectedMessage)
+        assertEquals("'${mockMovie.title}' is already in the Global Watchlist", collectedMessage)
         job.cancel()
     }
 
     @Test
     fun `observeWatchlistChanges success updates state with movie list`() = runTest {
         val mockWatchlist = listOf(
-            Movie(1,"Dragon","xx.jpg",8.2),
-            Movie(2,"World","yy.jpg",9.3)
+            Movie(1, "Dragon", "xx.jpg", 8.2),
+            Movie(2, "World", "yy.jpg", 9.3)
         )
 
-        coEvery{
-            getWatchlistUseCase()
+        coEvery {
+            getGlobalWatchlistUseCase()
         } returns flowOf(Result.success(mockWatchlist))
 
-        viewModel.observeWatchlistChanges()
+        viewModel.observeGlobalWatchlistChanges()
         advanceUntilIdle()
 
         val finalState = viewModel.uiState.value
         assertEquals(
             mockWatchlist,
-            finalState.watchlistMovies,
+            finalState.globalWatchlistMovies,
             "watchlistMovies should be the same after success. State: $finalState"
         )
     }
@@ -298,11 +303,11 @@ class SearchViewModelTest {
     fun `observeWatchlistChanges failure sets error to true`() = runTest {
         val simulatedError = Exception("Could Not Fetch Watchlist")
         val failureResult: Result<List<Movie>> = Result.failure(simulatedError)
-        coEvery{
-            getWatchlistUseCase()
+        coEvery {
+            getGlobalWatchlistUseCase()
         } returns flowOf(failureResult)
 
-        viewModel.observeWatchlistChanges()
+        viewModel.observeGlobalWatchlistChanges()
         advanceUntilIdle()
 
         val finalState = viewModel.uiState.value
@@ -313,11 +318,8 @@ class SearchViewModelTest {
         )
         assertEquals(
             emptyList(),
-            finalState.watchlistMovies,
+            finalState.globalWatchlistMovies,
             "watchlistMovies should be empty after failure. State: $finalState"
         )
     }
 }
-
-/*TODO - Initial state test case*/
-
