@@ -10,12 +10,15 @@ import com.example.cinesync.domain.UseCase.DiscoverMoviesUseCase
 import com.example.cinesync.domain.UseCase.GetGlobalWatchlistUseCase
 import com.example.cinesync.domain.UseCase.SearchMoviesUseCase
 import com.example.cinesync.domain.UseCase.UserUseCase
+import com.example.cinesync.uiApp.Login.LoginAuthScreenAction
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -30,12 +33,12 @@ class SearchViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(SearchUiState())
     val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
-    private val _snackbarMessage = MutableSharedFlow<String>()
-    val snackbarMessage = _snackbarMessage.asSharedFlow()
 
-    init {
-        Log.e("SearchViewModel", "init")
-//        observeWatchlistChanges()
+    private val _action = Channel<SearchScreenAction>(capacity=Channel.BUFFERED)
+    val action = _action.receiveAsFlow()
+
+    private fun sendAction(action: SearchScreenAction){
+        _action.trySend(action)
     }
 
     fun fetchMovies(){
@@ -103,7 +106,7 @@ class SearchViewModel @Inject constructor(
         Log.e("SearchViewMode", "Is loading: ${_uiState.value.isLoading}")
     }
 
-    fun addMovieToGlobalWatchlist(user:User, movie: Movie) {
+    fun addMovieToGlobalWatchlist(movie: Movie) {
         viewModelScope.launch {
             addMovieToGlobalWatchlistUseCase(movie)
                 .onSuccess { wasAdded ->
@@ -113,34 +116,63 @@ class SearchViewModel @Inject constructor(
                         "'${movie.title}' is already in the Global Watchlist"
                     }
                     if(wasAdded){observeGlobalWatchlistChanges()} /*TODO repeated fetching and copy, optimize it*/
-                    _snackbarMessage.emit(message)
+                    sendAction(SearchScreenAction.ShowSnackbar(message))
                 }
                 .onFailure { error ->
                     Log.e("SearchViewModel", "Error adding movie: ${error.message}", error)
-                    _snackbarMessage.emit("Error: Could not add movie")
+                    val message = "Error: Could not add movie"
+                    sendAction(SearchScreenAction.ShowSnackbar(message))
                 }
         }
     }
-    fun addMovieToLocalWatchlist(user:User, movie: Movie) {
-        viewModelScope.launch{
-            try{
-                val movieAdded = false
-                if(user.username!=null) {
-                    val movieAdded = userUseCase.insertMovieInUserWatchlist(user.username,movie)
+    fun addMovieToLocalWatchlist(user: User?, movie: Movie) {
+        viewModelScope.launch {
+            if (user?.username == null) {
+                val message= "Error: User not logged in."
+                sendAction(SearchScreenAction.ShowSnackbar(message))
+                return@launch
+            }
+            try {
+                val movieWasAdded = userUseCase.insertMovieInUserWatchlist(user.username, movie)
+                val message = if (movieWasAdded) {
+                    "'${movie.title}' added to Local Watchlist"
+                } else {
+                    "'${movie.title}' is already in the Local Watchlist"
                 }
-                var message = ""
-                if(!movieAdded){
-                    message = "'${movie.title}' is already in the Local Watchlist"
-                } else{
-                    message = "'${movie.title}' added to Local Watchlist"
+                sendAction(SearchScreenAction.ShowSnackbar(message))
+
+                if (movieWasAdded) {
+                    _uiState.update { it.copy(localWatchlistMovies = it.localWatchlistMovies + movie) }
                 }
-                _snackbarMessage.emit(message)
-                _uiState.update { it.copy(localWatchlistMovies = it.localWatchlistMovies + movie, error = false, isLoading = false) }
-                Log.d("SearchViewModel", "Movie added to local watchlist: ${movie.title}")
-            }catch(e:Exception){
+            } catch (e: Exception) {
                 Log.e("SearchViewModel", "Error adding movie locally: ${e.message}", e)
-                _snackbarMessage.emit("Error: Could not add movie")
+                val message = "Error: Could not add movie"
+                sendAction(SearchScreenAction.ShowSnackbar(message))
             }
         }
+    }
+
+    fun onEvent(user:User?, event: SearchScreenEvent){
+        when(event){
+            is SearchScreenEvent.ScreenLaunched -> {
+                fetchMovies()
+                observeGlobalWatchlistChanges()
+                observeLocalWatchlistChanges(user)
+            }
+            is SearchScreenEvent.SearchQueryChanged -> {
+                _uiState.update { it.copy(searchQuery = event.query) }
+            }
+            is SearchScreenEvent.PerformSearch -> {
+                fetchSearchedMovie(_uiState.value.searchQuery?:"")
+            }
+            is SearchScreenEvent.AddToGlobalWatchlist -> {
+                addMovieToGlobalWatchlist(movie = event.movie)
+            }
+            is SearchScreenEvent.AddToLocalWatchlist -> {
+                addMovieToLocalWatchlist(user,event.movie)
+            }
+            else -> Unit
+        }
+
     }
 }

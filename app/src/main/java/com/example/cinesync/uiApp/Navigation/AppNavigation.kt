@@ -13,6 +13,8 @@ import com.example.cinesync.uiApp.GlobalWatchlist.WatchlistScreen
 import com.example.cinesync.uiApp.LocalWatchlist.LocalWatchlistScreen
 import com.example.cinesync.uiApp.GlobalWatchlist.WatchlistScreen
 import com.example.cinesync.uiApp.Login.addLoginAuthScreen
+import com.example.cinesync.uiApp.Login.addSignupScreen
+import com.example.cinesync.uiApp.Search.addSearchScreen
 
 @Composable
 fun AppNavigation(modifier: Modifier = Modifier) {
@@ -24,12 +26,6 @@ fun AppNavigation(modifier: Modifier = Modifier) {
         startDestination = Screens.LoginScreen.name,
         modifier = modifier,
     ) {
-        composable(Screens.SearchScreen.name) {
-            SearchScreen(
-                navController = navController,
-                sharedViewModel = sharedViewModel
-            )
-        }
         composable(Screens.LocalWatchlistScreen.name) {
             LocalWatchlistScreen(
                 navController = navController,
@@ -43,8 +39,7 @@ fun AppNavigation(modifier: Modifier = Modifier) {
             )
         }
         addLoginAuthScreen(navController = navController,sharedViewModel = sharedViewModel)
-        composable(Screens.SignupScreen.name) {
-            SignupScreen(navController = navController)
-        }
+        addSignupScreen(navController = navController)
+        addSearchScreen(navController = navController,sharedViewModel = sharedViewModel)
     }
 }

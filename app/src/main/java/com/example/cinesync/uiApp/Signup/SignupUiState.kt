@@ -6,6 +6,5 @@ data class SignupUiState (
     val confirmPassword: String = "",
     val isLoading: Boolean = false,
     val error: Boolean = false,
-    val signedUp: Boolean = false
 ){
 }

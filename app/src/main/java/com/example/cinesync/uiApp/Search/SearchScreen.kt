@@ -68,6 +68,7 @@ import com.example.cinesync.uiApp.Navigation.Screens
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.cinesync.ui.theme.CustomBlue
 import com.example.cinesync.ui.theme.CustomDarkGreen
+import com.example.cinesync.uiApp.Footer.AppFooter
 import com.example.cinesync.uiApp.Navigation.SharedViewModel
 import kotlinx.coroutines.launch
 
@@ -194,88 +195,27 @@ fun MovieCard(
 
 }
 
-@Composable
-fun AppFooter(modifier: Modifier = Modifier,navController: NavController) {
-    BottomAppBar(
-        modifier = modifier.fillMaxWidth(),
-        containerColor = Color.White,
-        windowInsets = WindowInsets(0, 0, 0, 0)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Search Button
-            Button(onClick = { /*TODO Fix search query search button and normal search button*/
-                navController.navigate(Screens.SearchScreen.name) },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = CustomBlue,
-                    contentColor = Color.White)
-                ) {
-                Icon(Icons.Default.Search, contentDescription = "Search")
-                Text(text = "Search", modifier = Modifier.padding(start = 8.dp))
-            }
-
-            // Watchlist Button
-            Button(onClick = {navController.navigate(Screens.GlobalWatchlistScreen.name)},
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = CustomBlue,
-                    contentColor = Color.White)
-            ) {
-                Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Global Watchlist")
-                Text(text = "Global", modifier = Modifier.padding(start = 8.dp))
-            }
-            Button(onClick = {navController.navigate(Screens.LocalWatchlistScreen.name)},
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = CustomBlue,
-                    contentColor = Color.White)
-            ) {
-                Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Local Watchlist")
-                Text(text = "Local", modifier = Modifier.padding(start = 8.dp))
-            }
-        }
-    }
-}
-
 
 @Composable
 fun SearchScreen(
-    modifier: Modifier = Modifier,
-    viewModel: SearchViewModel = hiltViewModel(),
-    sharedViewModel: SharedViewModel = viewModel(),
-    navController: NavController = rememberNavController()
+    event:(SearchScreenEvent) -> Unit,
+    uiState: SearchUiState,
+    snackbarHostState: SnackbarHostState
 ) {
-    val user by sharedViewModel.currentUser.collectAsState()
-    var searchQuery by remember { mutableStateOf("") }
-    val uiState by viewModel.uiState.collectAsState()
-    val movies = uiState.movies
 
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+//    val snackbarHostState = remember { SnackbarHostState() }
+//    val scope = rememberCoroutineScope()
 
-    LaunchedEffect(key1 = Unit) {
-        viewModel.fetchMovies()
-        viewModel.observeGlobalWatchlistChanges()
-        viewModel.observeLocalWatchlistChanges(user)
-    }
-
-    LaunchedEffect(Unit) {
-        viewModel.snackbarMessage.collect { message ->
-            scope.launch {
-                snackbarHostState.showSnackbar(message = message,duration = SnackbarDuration.Short)
-            }
-        }
-    }
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it
-                        viewModel.fetchSearchedMovie(searchQuery)  },
+                value = uiState.searchQuery?:"",
+                onValueChange = { searchQuery ->
+                    event(SearchScreenEvent.SearchQueryChanged(searchQuery))
+                    event(SearchScreenEvent.PerformSearch) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp).testTag("search_field"),
@@ -285,19 +225,25 @@ fun SearchScreen(
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(
                     onSearch = {
-                        viewModel.fetchSearchedMovie(searchQuery)
+                            event(SearchScreenEvent.SearchQueryChanged(uiState.searchQuery?:""))
+                            event(SearchScreenEvent.PerformSearch)
                     }
                 )
             )
         },
         bottomBar = {
-            AppFooter(navController=navController)
+            AppFooter(
+                onSearchClick = { event(SearchScreenEvent.ScreenLaunched) },
+                onLocalWatchlistClick = { event(SearchScreenEvent.LocalWatchlistClicked) },
+                onGlobalWatchlistClick = { event(SearchScreenEvent.GlobalWatchlistClicked) }
+            )
         }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
+                .padding(innerPadding)
+                .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (uiState.isLoading) {
@@ -311,22 +257,11 @@ fun SearchScreen(
                     contentPadding = PaddingValues(8.dp),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    items(movies) { movie ->
+                    items(uiState.movies) { movie ->
                         MovieCard(
                             movie = movie,
-                            onLocalAddClicked = {
-                                if (user != null) {
-                                    viewModel.addMovieToLocalWatchlist(user!!, movie)
-                                } else {
-                                   navController.navigate(Screens.LoginScreen.name)
-                                } },
-                            onGlobalAddClicked = {
-                                if(user!=null){
-                                    viewModel.addMovieToGlobalWatchlist(user!!, movie)
-                                }else{
-                                    navController.navigate(Screens.LoginScreen.name)
-                                }
-                            },
+                            onLocalAddClicked = {event(SearchScreenEvent.AddToLocalWatchlist(movie))},
+                            onGlobalAddClicked = {event(SearchScreenEvent.AddToGlobalWatchlist(movie))},
                             isMovieAddedLocally = uiState.localWatchlistMovies.contains(movie),
                             isMovieAddedGlobally = uiState.globalWatchlistMovies.contains(movie)
                         )
@@ -348,5 +283,9 @@ fun SearchScreen(
 @Preview(showBackground = true)
 @Composable
 fun SearchScreenPreview(){
-    SearchScreen()
+    SearchScreen(
+        event = {},
+        uiState = SearchUiState(),
+        snackbarHostState = SnackbarHostState()
+    )
 }

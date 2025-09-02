@@ -50,8 +50,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.cinesync.domain.Entity.Movie
-import com.example.cinesync.uiApp.Search.AppFooter
 import com.example.cinesync.ui.theme.CustomBlue
+import com.example.cinesync.uiApp.Footer.AppFooter
+import com.example.cinesync.uiApp.Navigation.Screens
 import com.example.cinesync.uiApp.Navigation.SharedViewModel
 
 @Composable
@@ -174,7 +175,12 @@ fun LocalWatchlistScreen(modifier: Modifier = Modifier,
 
     Scaffold (
         topBar = {TopBar(navController)},
-        bottomBar = { AppFooter(modifier, navController = navController) },
+        bottomBar = { AppFooter(
+            modifier,
+            onGlobalWatchlistClick = {navController.navigate(Screens.GlobalWatchlistScreen.name)},
+            onSearchClick = {navController.navigate(Screens.SearchScreen.name)},
+            onLocalWatchlistClick = {navController.navigate(Screens.LocalWatchlistScreen)}
+        )},
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { innerPadding ->
         if (uiState.isLoading) {

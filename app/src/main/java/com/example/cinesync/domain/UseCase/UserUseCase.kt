@@ -16,7 +16,7 @@ open class UserUseCase(
     }
 
     open suspend fun insertMovieInUserWatchlist(username:String, movie: Movie):Boolean {
-        val alreadyPresent:Boolean = getUserWatchlist(username)?.any { it.title == movie.title }?:false
+        val alreadyPresent:Boolean = getUserWatchlist(username)?.any { it.title == movie.title && it.posterPath==movie.posterPath}?:false
         if(!alreadyPresent) {
             userRepository.addMovieToWatchlist(username, movie)
             return true

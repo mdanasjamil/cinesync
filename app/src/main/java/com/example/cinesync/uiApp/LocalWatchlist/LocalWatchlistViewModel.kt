@@ -67,9 +67,13 @@ class LocalWatchlistViewModel @Inject constructor(
             _uiState.value.isLoading = true
             try{
                 userUseCase.removeMovieFromWatchlist(user.username,movie)
+                val message = "${movie.title} removed from Local Watchlist"
+                _snackbarMessage.emit(message)
                 val movies = userUseCase.getUserWatchlist(user.username)
                 _uiState.update{it.copy(isLoading = false, error = false,movies = movies?:emptyList())}
             }catch(e: Exception){
+                val message = "Error removing ${movie.title} from Local Watchlist"
+                _snackbarMessage.emit(message)
                 _uiState.update { it.copy(isLoading = false, error = true) }
                 Log.e("GetWatchlistUseCase", "Error fetching watchlist", e)
             }
